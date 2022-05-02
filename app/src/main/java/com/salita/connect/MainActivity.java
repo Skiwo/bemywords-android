@@ -366,7 +366,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 if (!display_error) {
-                    mWebView.loadUrl("file:///android_asset/htmlapp/helpers/error.html");
+                    mWebView.loadUrl("https://my.salitaconnect.com/dashboard/offline");
                     display_error = true;
                 }
             }
@@ -381,7 +381,7 @@ public class MainActivity extends AppCompatActivity {
         });
         SetWebView(mWebView);
         if (!checkInternetConnection(MainActivity.this)) {
-            mWebView.loadUrl("file:///android_asset/htmlapp/helpers/error.html");
+            mWebView.loadUrl("https://my.salitaconnect.com/dashboard/offline");
             no_internet = true;
             return;
         }
