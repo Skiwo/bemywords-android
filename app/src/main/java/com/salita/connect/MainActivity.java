@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
         WebView splash_mWebView = (WebView) findViewById(R.id.activity_splash_webview);
         splash_mWebView.setWebChromeClient(new WebChromeClient());
         splash_mWebView.setWebViewClient(new WebViewClient());
