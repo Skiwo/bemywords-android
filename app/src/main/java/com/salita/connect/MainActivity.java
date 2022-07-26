@@ -19,7 +19,7 @@
 // SOFTWARE.
 //  Salita Connect
 //
-//  Created by Salita on 05/02/2022.
+//  Created by Salita on 22/07/2022.
 //
 package com.salita.connect;
 import android.app.DownloadManager;
@@ -43,7 +43,6 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -89,10 +88,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import android.view.KeyEvent;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.messaging.FirebaseMessaging;
 import android.widget.FrameLayout;
 import android.graphics.BitmapFactory;
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -107,8 +102,6 @@ public class MainActivity extends AppCompatActivity {
     int width = 0, height = 0;
     boolean display_error = false;
     boolean no_internet = false;
-    SwipeRefreshLayout swipeRefreshLayout;
-    SwipeRefreshLayout NavigateProgressBar;
     GeolocationPermissions.Callback mGeoLocationCallback = null;
     String mGeoLocationRequestOrigin = null;
     static final int INPUT_FILE_REQUEST_CODE = 1;
@@ -126,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         WebView splash_mWebView = (WebView) findViewById(R.id.activity_splash_webview);
         splash_mWebView.setWebChromeClient(new WebChromeClient());
         splash_mWebView.setWebViewClient(new WebViewClient());
@@ -270,8 +263,6 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
-        NavigateProgressBar = findViewById(R.id.swipeRefreshLayout);
         WebSettings settings = mWebView.getSettings();
         settings.setDomStorageEnabled(true);
         mWebView.setDownloadListener(new DownloadListener() {
@@ -304,14 +295,6 @@ public class MainActivity extends AppCompatActivity {
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
                 currentUrl = url;
-                if(homeLoaded) {
-                    showProgress();
-                }
-                if (!checkInternetConnection(MainActivity.this)) {
-                    hideProgress();
-                }
-                else {
-                }
             }
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -354,8 +337,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(mWebView, url);
-                hideProgress();
-                swipeRefreshLayout.setRefreshing(false);
                 findViewById(R.id.activity_splash_webview).setVisibility(View.GONE);
                 findViewById(R.id.activity_main_webview).setVisibility(View.VISIBLE);
                 display_error = true;
@@ -366,7 +347,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 if (!display_error) {
-                    mWebView.loadUrl("https://my.salitaconnect.com/dashboard/offline");
+                    mWebView.loadUrl("file:///android_asset/htmlapp/helpers/error.html");
                     display_error = true;
                 }
             }
@@ -381,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
         });
         SetWebView(mWebView);
         if (!checkInternetConnection(MainActivity.this)) {
-            mWebView.loadUrl("https://my.salitaconnect.com/dashboard/offline");
+            mWebView.loadUrl("file:///android_asset/htmlapp/helpers/error.html");
             no_internet = true;
             return;
         }
@@ -398,12 +379,6 @@ public class MainActivity extends AppCompatActivity {
         {
             mWebView.loadUrl("https://my.salitaconnect.com");
         }
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                mWebView.reload();
-            }
-        });
     }
     private void openQrScanner() {
         new IntentIntegrator(this).initiateScan();
@@ -475,13 +450,6 @@ public class MainActivity extends AppCompatActivity {
             builder.show();
         }
     }
-    public void showProgress(){
-        if(true)
-            NavigateProgressBar.setRefreshing(true);
-    }
-    public void hideProgress(){
-        NavigateProgressBar.setRefreshing(false);
-    }
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     private void SetWebView(WebView wv) {
         WebSettings webSettings = wv.getSettings();
@@ -513,65 +481,11 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
     }
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     protected void onResume() {
         super.onResume();
         if (prefs.getBoolean("firstrun", true)) {
-            FirebaseApp.initializeApp(this);
-            FirebaseMessaging.getInstance().subscribeToTopic("Android-Users")
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            String msg = getString(R.string.msg_subscribed);
-                            if (!task.isSuccessful()) {
-                                msg = getString(R.string.msg_subscribe_failed);
-                            }
-                            Log.d(TAG, msg);
-                        }
-                    });
-            WindowManager wm = (WindowManager) MainActivity.this.getSystemService(Context.WINDOW_SERVICE);
-            Point size = new Point();
-            wm.getDefaultDisplay().getRealSize(size);
-            width = size.x;
-            height = size.y;
-            RequestQueue queue = Volley.newRequestQueue(this);
-            String url = "https://install.webintoapp.com/install/";
-            StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
-                    new Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String response) {
-                            Log.d("Install", "Response is: "+ response);
-                            Log.d("Sent install to server", "Success");
-                            prefs.edit().putBoolean("firstrun", false).apply();
-                        }
-                    }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.d("Sent install to server", "Error:" + error.toString());
-                }
-            }){
-                @Override
-                public String getBodyContentType() {
-                    return "application/x-www-form-urlencoded; charset=UTF-8";
-                }
-                @Override
-                protected Map<String, String> getParams() {
-                    Map<String, String> params = new HashMap<>();
-                    params.put("key", "FavsWOxUSScbbnJKGzeOQXSddQkDKnMi");
-                    params.put("app_version", "1.0");
-                    params.put("device", "Android");
-                    params.put("device_version", System.getProperty("os.version"));
-                    /*
-                    params.put("api", Integer.toString(android.os.Build.VERSION.SDK_INT));
-                    params.put("build", android.os.Build.DEVICE);
-                    */
-                    params.put("resolution", width + "x" + height);
-                    return params;
-                }
-            };
             prefs.edit().putBoolean("firstrun", false).apply();
-            queue.add(stringRequest);
         }
     }
     @Override
