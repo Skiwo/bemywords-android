@@ -22,11 +22,9 @@
 //
 // Salita Connect
 //
-// Created by Salita on 05/02/2022.
+// Created by Salita on 22/07/2022.
 //
 -->
 <resources>
     <string name="app_name">Salita Connect</string>
-    <string name="msg_subscribed">Successed</string>
-    <string name="msg_subscribe_failed">Failed</string>
 </resources>
