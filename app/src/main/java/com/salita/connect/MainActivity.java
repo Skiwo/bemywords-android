@@ -191,23 +191,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPermissionRequest(PermissionRequest request) {
                 permissionRequest = request;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+                Log.v("permission request",request.getResources().toString());
+
+
                     for(String permission: request.getResources()){
-                        if(permission.equals(PermissionRequest.RESOURCE_VIDEO_CAPTURE)){
-                            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, PERMISSION_VIDEO_CAPTURE1);
+                        if(permission.equals(PermissionRequest.RESOURCE_AUDIO_CAPTURE)){
+
+                            if (ContextCompat.checkSelfPermission(MainActivity.this, PermissionRequest.RESOURCE_VIDEO_CAPTURE) != PackageManager.PERMISSION_GRANTED) {
+                                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_AUDIO);
                                 return;
-                            }
-                            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_VIDEO_CAPTURE2);
-                                return;
-                            }
-                            else{
-                                getVideoCapturePermission();
                             }
                         }
                     }
-                }
+
             }
             @Override
             public boolean onShowFileChooser(
@@ -427,18 +424,8 @@ public class MainActivity extends AppCompatActivity {
                 if (mGeoLocationCallback != null)
                     mGeoLocationCallback.invoke(mGeoLocationRequestOrigin, true, true);
             }
-            else if(requestCode == PERMISSION_VIDEO_CAPTURE1){
-                if(!checkAudioPermission(MainActivity.this)){
-                    getAudioPermission(MainActivity.this);
-                }
-                else{
-                    getVideoCapturePermission();
-                }
-            }
-            else if(requestCode == PERMISSION_VIDEO_CAPTURE2){
-                getVideoCapturePermission();
-            }
-            else if(requestCode == PERMISSION_CAMERA){
+            else if(requestCode == PERMISSION_AUDIO){
+                permissionRequest.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
             }
             mWebView.reload();
         }
