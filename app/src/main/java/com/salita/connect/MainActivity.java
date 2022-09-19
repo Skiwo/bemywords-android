@@ -427,7 +427,7 @@ public class MainActivity extends AppCompatActivity {
             else if(requestCode == PERMISSION_AUDIO){
                 permissionRequest.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
             }
-            mWebView.reload();
+
         }
     }
     public void downloadDialog(final String url, final String userAgent, final String contentDisposition, final String mimetype) {
